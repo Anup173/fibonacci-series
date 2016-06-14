@@ -65,8 +65,8 @@ plt.style.use('ggplot')
 import pylab
 
 print("\nTests for Gaussian Noise:")
-FIB_MAX = 1000
-fibs = fb.fibList(FIB_MAX)
+# Generate known true Fibonacci numbers to try to reproduce
+fibs = fb.fibList(1000)
 x, y = [], []
 for i in range(200):
     x.append(random.randrange(1, FIB_MAX, 1))  # random n for first 100 fib numbers

@@ -2,7 +2,14 @@
 # J Pocahontas Olson   June 2016
 This directory contains a machine learning investigation of Fibonacci numbers, written in python.
 Future plans include making a simple resting web app for Fibonacci numbers, written in python and flask.
-Clone this directory to your machine, and ensure you have python version 3 or above installed.
+
+###################################
+####           SET-UP          ####
+###################################
+
+Clone this github repository to your machine, and ensure you have python version 3 or above installed, 
+and Flask (sudo pip3 install flask).
+
 
 ###################################
 ####     MACHINE LEARNING      ####

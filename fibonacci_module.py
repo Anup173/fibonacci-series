@@ -100,12 +100,12 @@ def nearest_fib(input):
         return 1
     
     (n_plus, n_minus) = n_Binet(input)
-    if ( round(n_plus) == round(n_minus)):
+    if ( round(n_plus) == round(n_minus) ):
         return round(n_plus)
     else:
         fib_plus  = f_Binet(round(n_plus ))
         fib_minus = f_Binet(round(n_minus))
-        if ( abs(fib_plus - input) < abs(fib_minus - input)):
+        if ( abs(fib_plus - input) < abs(fib_minus - input) ):
             return fib_plus
         else:
             return fib_minus
