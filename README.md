@@ -2,6 +2,7 @@
 # J Pocahontas Olson   June 2016
 This directory contains a machine learning investigation of Fibonacci numbers, written in python.
 Future plans include making a simple resting web app for Fibonacci numbers, written in python and flask.
+Clone this directory to your machine, and ensure you have python version 3 or above installed.
 
 ###################################
 ####     MACHINE LEARNING      ####
@@ -15,7 +16,7 @@ This executes a python script that investigates machine learning, using the Fibo
 as input data to fit.  
 It graphs the data, obtains a fit to predict Fibonacci numbers, and evaluates it against the true calculated
 Fibonacci numbers.  
-Then, because a theorectical limit exists, we try that as well.
+Then, because a theorectical limit for the Fibonacci exists, we try a closed form expression for generating the sequence.
 
 Finally, we artificially create a "noisey" input of Fibonacci numbers
 

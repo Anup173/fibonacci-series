@@ -6,6 +6,9 @@ from app import app
 def index():
     return render_template('index.html', title="Home")
 
+@app.route('/test_script.html')
+def test_script():
+    return render_template('test_script.html')
 
 @app.route('/fib/')
 def fib_usage():
