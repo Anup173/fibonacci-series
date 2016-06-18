@@ -82,26 +82,44 @@ def is_fibonacci(integer):
 def n_Binet(input):
     input = ensure_positive_int(input)
     if (input == 0):
-        return (1, 1)
-#    if (input >= (sys.float_info.max + 4)/math.sqrt(5)):
-#        raise ValueError("Number too large, exceeds machine precision")
-#        return (0, 0)
+        return (1, 1)  # 0 is the first Fibonacci number
     numerator_plus  = input*math.sqrt(5) + math.sqrt(5*math.pow(input,2) + 4)
     numerator_minus = input*math.sqrt(5) + math.sqrt(5*math.pow(input,2) - 4)
     n_plus  = math.log(numerator_plus /2, phi)
     n_minus = math.log(numerator_minus/2, phi)
-    return (n_plus, n_minus)
+
+    # Fibonacci numbers have perfect square, so use that if that's the case
+    if is_square(numerator_plus):
+        return (n_plus, n_plus)
+    elif is_square(numerator_minus):
+        return (n_minus, n_minus)
+    else:
+        return (n_plus, n_minus)
+
+
+# Binet's formula to find the nth Fibonacci number
+def f_Binet(nth):
+    nth = ensure_positive_int(nth)
+    # JPO FIX LATER #
+    #    if (nth == 0):
+    #        raise ValueError("Zero not valid.  Indexing is such that 1st Fib num is 0, 2nd is 1, etc.")
+    if (nth == 1):
+        return 0  # 0 is the first Fibonacci number
+    # Account for indexing (1st Fib num is 0, 2nd is 1, etc.)
+    # JPO FIX LATER #    nth -= 1
+    
+    return round((math.pow(phi, nth) - math.pow(psi, nth))/math.sqrt(5))
 
 
 # Nudges a non-fibonacci number to the closest fibonacci number
-def nearest_fib(input):
+def nearest_Binet_fib(input):
     input = ensure_positive_int(input)
     if (input == 0):
-        return 1
+        return 0  # 0 is the first Fibonacci number
     
     (n_plus, n_minus) = n_Binet(input)
     if ( round(n_plus) == round(n_minus) ):
-        return round(n_plus)
+        return f_Binet(round(n_plus))
     else:
         fib_plus  = f_Binet(round(n_plus ))
         fib_minus = f_Binet(round(n_minus))
@@ -110,14 +128,6 @@ def nearest_fib(input):
         else:
             return fib_minus
 
-
-# Binet's formula to find the nth Fibonacci number
-def f_Binet(nth):
-    nth = ensure_positive_int(nth)
-    if (nth == 1):
-        return 0
-    
-    return (math.pow(phi, nth) - math.pow(psi, nth))/math.sqrt(5)
 
 
 
@@ -174,3 +184,54 @@ def get_nth_saved_Fibonacci_number(nth):
     
     # Convert binary to integer and return the result
     return int.from_bytes(digit, byteorder='big')
+
+
+
+# Nudges a non-fibonacci number to the closest Fibonacci number
+# Does a binary search to find lower bound, then chooses nearest Fibonacci number
+def nearest_saved_fib(input):
+    return get_nth_saved_Fibonacci_number(nearest_saved_fib_index(input))
+
+# Finds index of nearest fib num. Rounds down if tie.
+def nearest_saved_fib_index(input):
+    numbers_in_file = os.path.getsize(filename)/NUMBER_OF_BYTES
+
+    # Set-up for binary search
+    left_index = 1
+    right_index = numbers_in_file
+    left_fib  = get_nth_saved_Fibonacci_number(left_index)
+    right_fib = get_nth_saved_Fibonacci_number(right_index)
+    
+    # Check input
+    if input < 0:
+        raise ValueError("All the Fibonacci numbers are positive. Please enter a positive value.")
+        return -1
+    if input > right_fib:
+        raise ValueError(input,"exceeds highest saved Fibonacci number.  \nEither choose a lower number to round, or regenerate the file containing the saved Fibonacci numbers (", filename,") with more values.")
+
+    # Binary search to get lower bound for nth Fibonacci number
+    while (left_fib < right_fib):
+        # Get midpoint
+        middle_index = math.floor(left_index + (right_index - left_index) / 2)
+        
+        # Replace midpoint as appropriate
+        if (get_nth_saved_Fibonacci_number(middle_index) < input):
+            left_index = middle_index + 1
+            left_fib = get_nth_saved_Fibonacci_number(left_index)
+        else:
+            right_index = middle_index
+            right_fib = get_nth_saved_Fibonacci_number(right_index)
+    # assert: left_index is now 1 (unchanged), OR 1 past the lower bound for input's index.
+    if left_index != 1:
+        left_index -= 1
+    left_fib = get_nth_saved_Fibonacci_number(left_index)
+    right_index = left_index + 1
+    right_fib = get_nth_saved_Fibonacci_number(right_index)
+
+    # Choose nearest Fibonacci number
+    if ((right_fib - input) < (input - left_fib)):   # picks closest fib, rounds down if equidistant
+        output = right_index
+    else:
+        output = left_index
+
+    return output

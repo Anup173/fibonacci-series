@@ -11,7 +11,7 @@ import random
 # Constants to set range of Fibonacci numbers, and gaussian noise
 FIB_MAX = 1000
 GAUSSIAN_MEAN = 1
-GAUSSIAN_STDEV = 0.3
+GAUSSIAN_STDEV = 0.1
 
 
 
