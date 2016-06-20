@@ -1,7 +1,7 @@
 # Fibonacci numbers, for EMC / Virtustream tech screen.  
 # J Pocahontas Olson   June 2016
 This directory contains a machine learning investigation of Fibonacci numbers, written in python.
-There is also a simple resting web app for Fibonacci numbers, written in Python with Flask.
+There is also a simple web app for Fibonacci numbers, written in Python with Flask.
 
 This github repository is the code submission for the tech screen for Virtustream.  My task is slightly modified, as I am applying for a data scientist role.  My assignment was to "do something with machine learning that involves the Fibonacci numbers".  I did that, and the regular tech screen too, because I thought it would be fun.  
 The Machine Learning section of the README below describes my interpretation of "machine learning with Fibonacci numbers", and the problem I invented to solve.
@@ -13,7 +13,7 @@ The Machine Learning section of the README below describes my interpretation of 
 
 Clone this github repository to your machine, and ensure you have python version 3 or above installed, 
 and Flask (sudo pip3 install flask).
-The machine learning part also uses the matplotlib & scipy modules, which you will have to install (python -m pip install <module name>) if you haven't already.
+The machine learning part also uses the matplotlib & scipy modules, which you will have to install (python -m pip install matplotlib, python -m pip install scipy) if you haven't already.
 
 
 
@@ -42,6 +42,7 @@ Output is truncated after 10,000 digits.  Scientific notation is acceptable.
 To mimic the format of the web app requirements, I made my own definition for what all should be in the machine learning code screen.
 # -------------------------------------------------- #
 Please provide a sample project for review:
+
 1.  The project should calculate and plot the first 100 Fibonacci numbers.
 2.  Determine a method to predict the 500th Fibonacci number, using only the first 100 numbers.
 3.  Describe the accuracy rate of your prediction, and make any relevant comparisons to other predicitons.

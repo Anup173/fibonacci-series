@@ -39,7 +39,7 @@ def myFib(argument):
         if num > 2:  # assert: fibNumbers = [0, 1]
             if num > TRUNCATE_AFTER_THIS_MANY:
                 num = TRUNCATE_AFTER_THIS_MANY
-                message = "Truncated output after " + str(TRUNCATE_AFTER_THIS_MANY) + " numbers."
+                message = "Truncated output after " + str(int(TRUNCATE_AFTER_THIS_MANY)) + " numbers."
             i=2
             while i <= num-1:  # -1 adjusts for zero-indexing
                 fibNumbers.append( fibNumbers[i-2] + fibNumbers[i-1] )

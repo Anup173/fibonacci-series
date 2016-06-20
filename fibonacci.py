@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt       # Plotting
 plt.style.use('ggplot')
 import pylab
 from scipy.optimize import curve_fit  # Curve fitting
+from sklearn.metrics import mean_squared_error  # Error of fit
 from distutils.util import strtobool  # Translates user answer to Yes/No question to bool
 
 FIRSTPOINTS  = int(100)
 PREDICTPOINT = int(500)
-debugging = False
 
 # Introduction to user
 print("Welcome!")
@@ -20,7 +20,7 @@ print("Welcome!")
 ### (1.)  Graph first 100 (FIRSTPOINTS) Fibonacci numbers
 ###############################
 y = fb.fibList(FIRSTPOINTS)
-x = list(range(FIRSTPOINTS))
+x = list(range(1,FIRSTPOINTS+1))  # Adjusts for index starting at 0
 print("Would you like to see a graph of the first", FIRSTPOINTS, "Fibonacci numbers? ")
 showit = strtobool(input("  [Figure 1]  Y/N: "))
 if showit:
@@ -52,16 +52,23 @@ def fitFibPrediction(x, m, b):
 # Find 500th (PREDICTPOINT) Fibonacci number as well
 predictList = fb.fibList(PREDICTPOINT)
 
-# Fit the line and plot it in red
+# Fit the line, plot it in red, predict 500th point
 popt, pcov = curve_fit(fitLogPrediction, log_x, log_y)   # Finds slope and y-intercept that best fit
-fit_y = [fitLogPrediction(x_index,popt[0],popt[1]) for x_index in log_x]  # Makes the line that fits
+fit_y = [fitLogPrediction(nFib,popt[0],popt[1]) for nFib in log_x]  # Makes the line that fits
+fitlog500prediction = fitLogPrediction(PREDICTPOINT,popt[0],popt[1])
+actual500num = predictList[PREDICTPOINT-1]
+# Find error bars for extrapolated predictions
+logerror = math.sqrt(mean_squared_error(log_y, fit_y))*math.sqrt(FIRSTPOINTS)
+lower500bound = math.exp(fitlog500prediction-logerror)
+upper500bound = math.exp(fitlog500prediction+logerror)
 print("\nFitting a line to the data, the best fit has slope\n", popt[0], "and y-intercept", popt[1])
+
 # For large n, the slope approaches phi = (1+sqrt(5))/2.  Let's see what we got.
 print("We can compare this to the theoretical limit (applicable for large n),\n  which should yield the golden ratio.")
 print("Compare the fit's prediction: ", math.exp(popt[0]))
-print("        to the golden ratio phi: ", fb.phi)
-print("\nUsing only", FIRSTPOINTS, "Fibonacci numbers, the fit's prediction differs from")
-print("        the theoretical limit by", 100*(1- math.exp(popt[0])/fb.phi), "%")
+print("     to the golden ratio phi: ", fb.phi)
+print("\nSo after using only", FIRSTPOINTS, "Fibonacci numbers, the fit behavior differs from")
+print("     the theoretical limit by", 100*(1- math.exp(popt[0])/fb.phi), "%")
 
 print("\nWould you like to see a graph of the line we fit to the \nfirst", FIRSTPOINTS,
       "Fibonacci numbers, on a log scale? ")
@@ -76,22 +83,27 @@ if showit:
     plt.title('Fitted prediction of Fibonacci numbers, on log scale')
     plt.subplots_adjust(hspace=0.5)
     plt.subplot(212)
-    plt.plot(log_x + [500], log_y + [math.log(predictList[PREDICTPOINT-1])], "bs")  # Log values in blue squares
-    plt.plot(log_x + [500], fit_y + [fitLogPrediction(500,popt[0],popt[1])], 'r-')  # Fit in red dashes
+    plt.plot(log_x + [PREDICTPOINT], log_y + [math.log(actual500num)], "bs")  # Log values in blue squares
+    plt.plot(log_x + [PREDICTPOINT], fit_y + [fitlog500prediction], 'r-')  # Fit in red dashes
     plt.xlabel('n^th Fibonacci number')
     plt.ylabel('Log of Fibonacci number')
     plt.title('Same graph, extrapolated to predict 500th Fibonacci number')
     pylab.show(block=False)
-print("From Figure 2, we can see that the fit seems to match the first 100 Fibonacci numbers well,")
-print("and extrapolating the fit to predict the 500th Fibonacci number seems pretty good as well.")
+print("From Figure 2, we can see that the fit seems to match the first", int(FIRSTPOINTS),"Fibonacci numbers well,")
+print("and extrapolating the fit to predict the", int(PREDICTPOINT),"th Fibonacci number seems pretty good also.")
+print("\nIn fact, the fit predicts the{0:4d}th Fibonacci number to be {1:12E},".format(int(PREDICTPOINT), math.exp(fitlog500prediction)))
+print("  within [{0:12E}, {1:12E}]. \nThe actual value, {2:12E}, is within these bounds.".format( lower500bound, upper500bound, actual500num))
+
 print("\nNow let us investigate how much the fit is off by.")
 
 
-##############################
-## (3.) Let's see how well our fit did
-##############################
-fit_differences = [y[x_index] - fitFibPrediction(x_index,popt[0],popt[1]) for x_index in x]
-fit_percent_differences = [(y[x_index] - fitFibPrediction(x_index,popt[0],popt[1]))/y[x_index] for x_index in x[1:]]
+
+
+#############################
+# (3.) Let's see how well our fit did
+#############################
+fit_differences = [y[nFib-1] - fitFibPrediction(nFib-1,popt[0],popt[1]) for nFib in log_x]
+fit_percent_differences = [(y[nFib-1] - fitFibPrediction(nFib-1,popt[0],popt[1]))/y[nFib-1] for nFib in log_x]
 
 print("We have calculated the fit's prediction of the first", FIRSTPOINTS, "Fibonacci numbers,")
 print("to compare to the actual Fibonacci numbers.")
@@ -103,14 +115,14 @@ showit = strtobool(input("  [Figure 3]  Y/N: "))
 if showit:
     plt.figure(3)
     plt.subplot(211)
-    plt.plot(x, fit_differences)
+    plt.plot(log_x, fit_differences)
     plt.xlabel('n^th Fibonacci number')
     plt.ylabel('Difference')
     plt.title('Difference from true Fibonacci number and fit')
     plt.ticklabel_format(style='sci', axis='y', scilimits=(-2,10))  # Sets scientific notation for axes
     plt.subplots_adjust(hspace=0.5)
     plt.subplot(212)
-    plt.plot(x[1:], fit_percent_differences)
+    plt.plot(log_x, fit_percent_differences)
     plt.xlabel('n^th Fibonacci number')
     plt.ylabel('Percent Difference')
     plt.title('Percent Difference from true Fibonacci number and fit')
@@ -130,21 +142,21 @@ print("   https://en.wikipedia.org/wiki/Fibonacci_number#Closed-form_expression"
 print("\nBinet's formula is meant for large n (where the ratio of Fibonacci numbers is ")
 print("closer to the golden ratio), but let's see what it predicts for the first 100 values.")
 
-binet_differences = [y[x_index] - fb.f_Binet(x_index) for x_index in x]
-binet_percent_differences = [(y[x_index] - fb.f_Binet(x_index))/y[x_index] for x_index in x[1:]]
+binet_differences = [y[nFib-1] - fb.f_Binet(nFib-1) for nFib in log_x]
+binet_percent_differences = [(y[nFib-1] - fb.f_Binet(nFib-1))/y[nFib-1] for nFib in log_x]
 print("\nWould you like to see the same graphs as before (differences and percent differences),")
 print("but using Binet's formula to predict the n^th Fibonacci number instead of the fit we made?")
 showit = strtobool(input("  [Figure 4]  Y/N: "))
 if showit:
     plt.figure(4)
     plt.subplot(211)
-    plt.plot(x, binet_differences)
+    plt.plot(log_x, binet_differences)
     plt.xlabel('n^th Fibonacci number')
     plt.ylabel('Difference')
     plt.title('Difference from true Fibonacci number and theoretical prediction')
     plt.subplots_adjust(hspace=0.5)
     plt.subplot(212)
-    plt.plot(x[1:], binet_percent_differences)
+    plt.plot(log_x, binet_percent_differences)
     plt.xlabel('n^th Fibonacci number')
     plt.ylabel('Percent Difference')
     plt.title('Percent Difference from true Fibonacci number and theoretical prediction')
@@ -156,27 +168,16 @@ print("the theoretical limit (Binet's formula) after a certain cut-off point (ma
 print("Also, getting more data for our initial fit (for example, the first 10,000 Fibonacci numbers)")
 print("would improve the accuracy of our fit.")
 
-## Which is better?
-print("\nWould you like to see both our fit and Binet's prediction graphed together, ")
-print("showing the percent differences, after a cut-off of n=20?")
-showit = strtobool(input("  [Figure 5]  Y/N: "))
-if showit:
-    plt.figure(5)
-    plt.plot(log_x[20:], fit_percent_differences[20:], label="Our fit")
-    plt.plot(log_x[20:], binet_percent_differences[20:], label="Binet's Formula")
-    plt.xlabel('n^th Fibonacci number')
-    plt.ylabel('Percent Difference')
-    plt.title('Comparing our fit (red) and Binet prediction (blue)')
-    pylab.show(block=False)
+
 
 
 ##############################
 ## (4.) Clean up noisy data
 ##############################
-HIGHEST_FIB_N      = int(100)#1000)
-NUMBEROFDATAPOINTS = int(50)#200)
+HIGHEST_FIB_N      = int(1000)
+NUMBEROFDATAPOINTS = int(200)
 
-print("\nWe now move on to part 5, simulating some data collection process, which")
+print("\n\nWe now move on to part 5, simulating some data collection process, which")
 print("obtains", NUMBEROFDATAPOINTS, "Fibonacci numbers with some Gaussian noise introduced.")
 print("It's pulling initial values from the first", HIGHEST_FIB_N, "Fibonacci numbers.")
 
@@ -186,27 +187,19 @@ import random
 
 ## Generate true Fibonacci numbers (between 1 and HIGHEST_FIB), to compare to predictions
 fibs = fb.fibList(HIGHEST_FIB_N)
-#print("fib list:", fibs)
-
 x = [random.randint(1, HIGHEST_FIB_N) for i in range(NUMBEROFDATAPOINTS)]
-#print("x",x)
 y = [fibs[x[i]-1] for i in range(NUMBEROFDATAPOINTS)]  #minus 1 adjusts for index starting at zero
-#print("y",y)
 
 ## Generate noisy data
 y_noise = api.add_noise(y)  # fib numbers with noise
 noise_differences = [y_noise[i]-y[i] for i in range(NUMBEROFDATAPOINTS)]
 noise_percent_differences = [(noise_differences[i]/y[i] if y[i]>0 else 0) for i in range(NUMBEROFDATAPOINTS)]
-if debugging:
-    print("y_noise: ", y_noise)
-    print("diff:  ", noise_differences)
-    print("%diff: ", noise_percent_differences)
 
 ## Plot of noise
 print("\nWould you like to see a plot of the noise we added to the Fibonacci numbers?")
-showit = strtobool(input("  [Figure 6]  Y/N: "))
+showit = strtobool(input("  [Figure 5]  Y/N: "))
 if showit:
-    plt.figure(6)
+    plt.figure(5)
     plt.plot(x, noise_percent_differences, marker='o',color='b',linestyle="None")
     plt.hlines(0, 0, HIGHEST_FIB_N, colors='r')
     pylab.xlim([1,HIGHEST_FIB_N])
@@ -214,11 +207,32 @@ if showit:
     plt.ylabel('Percent difference (signal-true)/true')
     plt.title('Noise from simulated measurer of Fibonacci number')
     pylab.show(block=False)
-print("From Figure 6, we can see ")
+print("From Figure 5, we can see that the noise is fairly random.")
+print("Since we are looking at percent differences, the size of the noise increases at")
+print("higher n, to mimic the difficulty in being precise when large numbers are involved.")
 
 
 ## Clean-up noise
-#corrected_fib_numbers = [fb.nearest_Binet_fib(y_noise[eachPoint]) for eachPoint in range(NUMBEROFDATAPOINTS)]
+print("\nWe clean-up the data, by nudging the noisy value to the nearest Fibonacci number.")
+print("We can not use the theoretical prediction (Binet's formula), unfortunately, because")
+print("the numbers get too big too fast.")
+print("Instead, I've implemented a way to save off a large amount of Fibonacci numbers to a binary file.")
+print("This trades space for computational time later.")
+print("I've also written a function to extract the nth Fibonacci number from that file")
+print("without having to go the whole way through the file or load it entirely to memory.")
+# Prompt to make a new saved file
+import os.path
+import distutils.util
+if not os.path.isfile(fb.filename):
+    ans = input("That saved file does not already exist. \n  Would you like to create one?: (Y/N) ")
+    makenew = distutils.util.strtobool(ans)
+    if makenew:
+        make_saved_Fibonacci_file()
+    else:
+        print("Can't show you the cool 'nudging' function until you create the saved file.  Exiting now.")
+        quit()
+
+# Correct the noisy inputs
 corrected_fib_numbers = [fb.nearest_saved_fib(y_noise[eachPoint]) for eachPoint in range(NUMBEROFDATAPOINTS)]
 wrongPrediction = []
 for value in range(NUMBEROFDATAPOINTS):
@@ -227,35 +241,31 @@ for value in range(NUMBEROFDATAPOINTS):
 cleaned_differences = [corrected_fib_numbers[i]-y[i] for i in range(NUMBEROFDATAPOINTS)]
 
 ## Plot of error in clean-up
-print("\nWould you like to see a plot of how often we were wrong in cleaning up the data?")
-showit = strtobool(input("  [Figure 7]  Y/N: "))
-if showit:
-    plt.figure(7)
-    plt.hist([abs(number) for number in cleaned_differences], bins = range(0,NUMBEROFDATAPOINTS,1))
-    plt.xlabel('How much we were wrong by')
-    plt.ylabel('How often we were wrong by this much')
-    plt.title('Error in cleaning up noisy data')
-    pylab.show(block=False)
-print("We were wrong",len(wrongPrediction),"out of", NUMBEROFDATAPOINTS, "times.")
+print("\nWhen cleaning up the data, we were wrong",len(wrongPrediction),"out of", NUMBEROFDATAPOINTS, "times.")
+#print("\nWould you like to see a plot of how often we were wrong in cleaning up the data?")
+#showit = strtobool(input("  [Figure 6]  Y/N: "))
+#if showit:
+#    plt.figure(6)
+#    plt.hist([abs(number) for number in cleaned_differences], bins = range(0,NUMBEROFDATAPOINTS,1))
+#    plt.xlabel('How much we were wrong by')
+#    plt.ylabel('How often we were wrong by this much')
+#    plt.title('Error in cleaning up noisy data')
+#    pylab.show(block=False)
 print("Would you like to see when we got the wrong number?")
 showit = strtobool(input("  [Table 1]  Y/N: "))
 if showit:
-    print("   i^th point     Orig n     Orig Fib num     Noisey input     Corrected Fib")
+    print("   Orig n     Orig Fib num     Noisey input     Corrected Fib")
     for wrong in wrongPrediction:
-        print('{0:10d} {1:11n} {2:11n} {3:16n} {4:16n}'.format(wrong, x[wrong], y[wrong], y_noise[wrong],corrected_fib_numbers[wrong]))
-print("From Table 1, we see that we were only wrong when the noise was so big that it passed the nearest Fibonacci number.")
+        print('{:11d}  {:11E} {:16E} {:16E}'.format(x[wrong], y[wrong], y_noise[wrong],corrected_fib_numbers[wrong]))
+print("From Table 1, we see that we were only wrong when")
+print("the noise was so big that it passed the nearest Fibonacci number.")
 
-if debugging:
-    print("All points:")
-    for eachPoint in range(NUMBEROFDATAPOINTS):
-        print(eachPoint, y[eachPoint], y_noise[eachPoint], corrected_fib_numbers[eachPoint], abs(corrected_fib_numbers[eachPoint]-y[eachPoint]))
 
 
 
 ##############################
 ##           END            ##
 ##############################
-pylab.show()
-
-print("This concludes our run-though of using machine learning to predict Fibonacci numbers.")
+print("\n\nThis concludes our run-though of using machine learning to predict Fibonacci numbers.")
 print("Thank you, and enjoy your day!")
+pylab.show()

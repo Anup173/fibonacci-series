@@ -2,7 +2,6 @@
 # Module containing function definitions relating to the Fibonacci numbers
 
 import math
-#import sys
 
 # A check to ensure that inputs are positive integers, which most of these functions require
 def ensure_positive_int(num):
@@ -100,13 +99,12 @@ def n_Binet(input):
 # Binet's formula to find the nth Fibonacci number
 def f_Binet(nth):
     nth = ensure_positive_int(nth)
-    # JPO FIX LATER #
-    #    if (nth == 0):
-    #        raise ValueError("Zero not valid.  Indexing is such that 1st Fib num is 0, 2nd is 1, etc.")
+    if (nth == 0):
+        raise ValueError("Zero not valid.  Indexing is such that 1st Fib num is 0, 2nd is 1, etc.")
     if (nth == 1):
         return 0  # 0 is the first Fibonacci number
     # Account for indexing (1st Fib num is 0, 2nd is 1, etc.)
-    # JPO FIX LATER #    nth -= 1
+    nth -= 1
     
     return round((math.pow(phi, nth) - math.pow(psi, nth))/math.sqrt(5))
 
@@ -171,6 +169,18 @@ def get_nth_saved_Fibonacci_number(nth):
     # Correct for index starting at 0 & make sure still positive
     index = ensure_positive_int(nth - 1)
     
+    # Make saved list if none exists
+    if not os.path.isfile(filename):
+        prompt =  "Could not find a binary file containing Fibonacci numbers."
+        prompt += "Do you wish to create a new one?: (Y/N) "
+        ans = input(prompt)
+        makenew = distutils.util.strtobool(ans)
+        if makenew:
+            make_saved_Fibonacci_file()
+        else:
+            raise IOError("No saved file to find Fibonacci number from.")
+            return -1
+
     size = int(os.path.getsize(filename)/NUMBER_OF_BYTES)
     if index >= size:
         msg = str(nth) + " exceeds the number of saved Fibonacci numbers (" + str(size) + ")."
